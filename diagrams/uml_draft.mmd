@@ -1,0 +1,51 @@
+classDiagram
+    class Owner {
+        +String first_name
+        +String last_name
+        +full_name() String
+    }
+
+    class Pet {
+        +String name
+        +int age
+        +String sex
+        +String species
+        +String breed
+        +List~String~ allergies
+        +summary() String
+    }
+
+    class Task {
+        +String title
+        +int duration_minutes
+        +String priority
+    }
+
+    class ScheduledTask {
+        +Task task
+        +String start_time
+        +String reason
+        +display() String
+    }
+
+    class Schedule {
+        +Owner owner
+        +Pet pet
+        +List~ScheduledTask~ scheduled_tasks
+        +String summary
+        +total_duration() int
+        +display() String
+    }
+
+    class Scheduler {
+        +generate_schedule(owner, pet, tasks, available_minutes, start_time) Schedule
+        -_build_prompt(owner, pet, tasks) String
+        -_parse_response(response) List~ScheduledTask~
+    }
+
+    Owner "1" --o "1" Pet : owns
+    Schedule "1" --> "1" Owner : belongs to
+    Schedule "1" --> "1" Pet : is for
+    Schedule "1" *-- "1..*" ScheduledTask : contains
+    ScheduledTask "1" --> "1" Task : wraps
+    Scheduler ..> Schedule : creates

@@ -2,6 +2,9 @@
 
 ## 1. System Design
 
+- a user should eneter their information and pets information
+- a user should edit the tasks.
+- a user should see the daily tasks.
 **a. Initial design**
 
 - Briefly describe your initial UML design.
