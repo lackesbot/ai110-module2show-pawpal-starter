@@ -8,12 +8,27 @@
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+Owner owns pet
+Schedule belongs to Owner
+Schedule is for Pet 
+Schedule contains schedulkedTask
+Scheduledtask wraps task
+Scheduler creates Schedule 
+
 - What classes did you include, and what responsibilities did you assign to each?
+For my UML Digram classes I have Owner, Pet, Task, ScheduledTask, Schedule, Scheduler.
+Owner class holds all the basic pet oners information such as their first and last name
+Pet class holds all the pets information inluding name, gender, age, species, breed and allergies
+ScheduledTask holds task and its start time and reason. The reason is included so to aid with the final schedule summary.
+Schedule holds owner, pet, scheduledtask, summary and the total duration to finally display everything.
+Scheduler holds a function to generate the schedule and prompt builder for the summary. 
 
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
+I added end_time to scheduledTask class because I had the start_time but not the end_time
+Also I added available_minutes to sceheduler for the user to note how much time they have for the tasks.
 
 ---
 

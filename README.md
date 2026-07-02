@@ -42,6 +42,17 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
+
+## Sample Output
+A run by the beach
+
+  Loice | Bulldog | Age: 9 | M
+  ..........................................
+  [ ] Bath Time        30 min  HIGH    once a week
+      Get all cleaned up
+
+
+
 ## 🖥️ Sample Output
 
 Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
