@@ -50,13 +50,13 @@ Also I added available_minutes to sceheduler for the user to note how much time 
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)? I used AI tools for brainsdtormioimg, writting a7 noting thongs that IO may have forgotten in my readme file and updating my functions with comments of their work. 
+- What kinds of prompts or questions were most helpful? I found prompts that were specific when taking a specific section for example I hand one methiod that I just found it to be redundant and thus, I attached those lines of code for my AI and asked it, how best I can summarize that function ionto something smaller. 
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+- Describe one moment where you did not accept an AI suggestion as-is. When implementing some pof the test cases it was adding irrelevant test
+- How did you evaluate or verify what the AI suggested? I checked with the project desc but also with my UML diagram to ensure everything looked good. 
 
 ---
 
@@ -64,13 +64,13 @@ Also I added available_minutes to sceheduler for the user to note how much time 
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+- What behaviors did you test? I tested core behavior, correctness, logic and conflict
+- Why were these tests important? These test are importnat because they help evaluate and pinpoint that all reas are good and working well.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+- How confident are you that your scheduler works correctly? 4 stars
+- What edge cases would you test next if you had more time? I'll test correctness, when adding multiple pets and having their schedule overlapp.
 
 ---
 
@@ -78,12 +78,12 @@ Also I added available_minutes to sceheduler for the user to note how much time 
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+- What part of this project are you most satisfied with? I'm ovrall satisfied with how well I was able to go through each section of the project.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+- If you had another iteration, what would you improve or redesign? In terms of improving, one thoing IO want to focus more on is dedicating more time to each section, ensuring that I also tackle the problems 
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+- What is one important thing you learned about designing systems or working with AI on this project? Having specific prompst for the AI really goes along way in fulfilling the vision that you have fopr the program.

@@ -132,6 +132,16 @@ if st.session_state.owner and st.session_state.owner.pets:
     selected_pet = next(p for p in st.session_state.owner.pets if p.name == selected_pet_name)
     if tasks_for_pet:
         st.caption(f"{len(tasks_for_pet)} task(s) found for {selected_pet_name}")
+        st.table([
+            {
+                "Task": t.title,
+                "Duration (min)": t.duration_minutes,
+                "Priority": t.priority.capitalize(),
+                "Frequency": t.frequency,
+                "Completed": "Yes" if t.completed else "No",
+            }
+            for t in tasks_for_pet
+        ])
     else:
         st.info(f"No tasks added for {selected_pet_name} yet.")
 
@@ -143,13 +153,6 @@ if st.button("Generate schedule"):
     elif not tasks_for_pet:
         st.error("Please add at least one task for this pet.")
     else:
-        # Conflict detection
-        total_needed = sum(t.duration_minutes for t in tasks_for_pet)
-        if total_needed > int(available_minutes):
-            st.warning(
-                f"Tasks total {total_needed} min but you only have {int(available_minutes)} min. "
-                "Lower-priority tasks will be dropped to fit."
-            )
         st.session_state.schedule = scheduler.generate_schedule(
             st.session_state.owner,
             selected_pet,
@@ -158,6 +161,46 @@ if st.button("Generate schedule"):
             start_time=start_time,
         )
 
-
 if "schedule" in st.session_state:
-    st.text(st.session_state.schedule.display())
+    schedule = st.session_state.schedule
+    sorted_tasks = scheduler.sort_by_time(schedule.scheduled_tasks)
+
+    st.success(
+        f"Schedule generated for {schedule.pet.name}: "
+        f"{schedule.total_duration()} of {schedule.available_minutes} min used."
+    )
+
+    # Tasks that were eligible but didn't make it into the schedule
+    pending_for_pet = [
+        t for t in schedule.pet.tasks if not t.completed and t.frequency == "daily"
+    ]
+    scheduled_titles = {item.task.title for item in sorted_tasks}
+    dropped = [t for t in pending_for_pet if t.title not in scheduled_titles]
+    if dropped:
+        st.warning(
+            "Could not fit into the available time: "
+            + ", ".join(t.title for t in dropped)
+        )
+
+    conflicts = scheduler.detect_conflicts(sorted_tasks)
+    if conflicts:
+        for warning in conflicts:
+            st.warning(warning)
+    else:
+        st.success("No scheduling conflicts detected.")
+
+    if sorted_tasks:
+        st.table([
+            {
+                "Status": "Done" if item.task.completed else "Pending",
+                "Start": item.start_time,
+                "End": item.end_time,
+                "Task": item.task.title,
+                "Duration (min)": item.task.duration_minutes,
+                "Priority": item.task.priority.capitalize(),
+                "Reason": item.reason,
+            }
+            for item in sorted_tasks
+        ])
+    else:
+        st.info("No tasks were scheduled.")
