@@ -83,14 +83,16 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
-| Feature | Method(s) | Notes |
-|---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Feature | Method | Description |
+|---------|--------|-------------|
+| Priority sorting | `Scheduler.generate_schedule()` | Tasks are sorted high → medium → low before scheduling so the most important tasks are always placed first |
+| Time budget fitting | `Scheduler.generate_schedule()` | Tasks that would exceed the owner's available minutes are dropped, starting from the lowest priority |
+| Recurring task filter | `Scheduler.generate_schedule()` | Only `"daily"` frequency tasks are included in each schedule run; weekly and one-off tasks are excluded |
+| Chronological sorting | `Scheduler.sort_by_time()` | Returns a scheduled task list sorted by `start_time` so the final schedule always reads in time order |
+| Filter tasks by pet | `Scheduler.filter_tasks_by_pet()` | Looks up a pet by name from the owner's pet list and returns only that pet's tasks, isolating work per animal |
+| Conflict detection | `Scheduler.detect_conflicts()` | Compares every pair of scheduled tasks for overlapping time windows using the formula `a_start < b_end and b_start < a_end`, returning a warning string per conflict |
+| Auto-reschedule recurring tasks | `Scheduler.reschedule_completed_tasks()` | When a `"daily"` or `"weekly"` task is marked complete, a fresh copy is automatically appended to the pet's task list via `Task.next_occurrence()` |
+| Next occurrence factory | `Task.next_occurrence()` | Creates an identical Task with `completed=False`, used by `reschedule_completed_tasks()` to produce the next instance of a recurring task |
 
 ## 📸 Demo Walkthrough
 

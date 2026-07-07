@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 
 
 @dataclass
@@ -13,6 +14,17 @@ class Task:
     def mark_complete(self) -> None:
         """Sets the task's completed flag to True, permanently marking it as done regardless of prior state."""
         self.completed = True
+
+    def next_occurrence(self) -> "Task":
+        """Returns a new identical Task with completed reset to False, for rescheduling daily or weekly tasks."""
+        return Task(
+            title=self.title,
+            duration_minutes=self.duration_minutes,
+            priority=self.priority,
+            description=self.description,
+            frequency=self.frequency,
+            completed=False,
+        )
 
 
 @dataclass
@@ -84,7 +96,7 @@ class Schedule:
 
     def total_duration(self) -> int:
         """Sums the duration_minutes of every scheduled task and returns the total minutes committed in this schedule."""
-        return sum(st.task.duration_minutes for st in self.scheduled_tasks)
+        return sum(item.task.duration_minutes for item in self.scheduled_tasks)
 
     def display(self) -> str:
         """Renders the full schedule as a formatted multi-line string with a header, per-task lines, and an optional AI-generated summary."""
@@ -95,30 +107,111 @@ class Schedule:
             f"Scheduled: {self.total_duration()} min\n"
             + "-" * 50
         )
-        task_lines = "\n".join(st.display() for st in self.scheduled_tasks)
+        task_lines = "\n".join(item.display() for item in self.scheduled_tasks)
         footer = f"\nSummary: {self.summary}" if self.summary else ""
         return f"{header}\n{task_lines}{footer}"
 
 
 class Scheduler:
+    PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
+
     def generate_schedule(
         self,
         owner: Owner,
         pet: Pet,
-        _tasks: list[Task],
+        tasks: list,
         available_minutes: int,
-        _start_time: str,
+        start_time: str,
     ) -> Schedule:
-        """Builds and returns a Schedule for the given owner and pet by selecting and ordering tasks within the available time budget using AI."""
-        # TODO: wire up AI — call self._build_prompt(owner, pet, _tasks),
-        # pass result to ai_client.complete(), then self._parse_response(_tasks, _start_time, response)
+        """Builds and returns a Schedule by filtering completed tasks, sorting by priority, and fitting tasks within the available time budget."""
+        # Convert dicts to Task objects if the caller passed raw form data
+        task_objects = [
+            Task(**t) if isinstance(t, dict) else t for t in tasks
+        ]
+
+        # Skip completed tasks (improvement #3)
+        pending = [t for t in task_objects if not t.completed and t.frequency == "daily"]
+
+        # Sort high → medium → low priority (improvement #1)
+        pending.sort(key=lambda t: self.PRIORITY_ORDER.get(t.priority, 1))
+
+        # Fit tasks within available time (improvement #2)
         scheduled_tasks: list[ScheduledTask] = []
+        time_used = 0
+        current_time = start_time
+
+        for task in pending:
+            if time_used + task.duration_minutes <= available_minutes:
+                end_time = self._advance_time(current_time, task.duration_minutes)
+                scheduled_tasks.append(ScheduledTask(
+                    task=task,
+                    start_time=current_time,
+                    end_time=end_time,
+                    reason=f"{task.priority.capitalize()} priority — fits within available time",
+                ))
+                current_time = end_time
+                time_used += task.duration_minutes
+
+
+        scheduled_tasks.sort(
+            key=lambda s: datetime.strptime(s.start_time, "%I:%M %p")
+        )
+
         return Schedule(
             owner=owner,
             pet=pet,
             available_minutes=available_minutes,
             scheduled_tasks=scheduled_tasks,
         )
+
+    def sort_by_time(self, scheduled_tasks: list[ScheduledTask]) -> list[ScheduledTask]:
+        """Returns the scheduled task list sorted chronologically by start_time."""
+        return sorted(
+            scheduled_tasks,
+            key=lambda s: datetime.strptime(s.start_time, "%I:%M %p")
+        )
+
+    def filter_tasks_by_pet(self, pets: list[Pet], pet_name: str) -> list[Task]:
+        """Returns all tasks belonging to the pet with the matching name, or an empty list if not found."""
+        for pet in pets:
+            if pet.name == pet_name:
+                return pet.tasks
+        return []
+
+    def detect_conflicts(self, scheduled_tasks: list[ScheduledTask]) -> list[str]:
+        """Checks every pair of scheduled tasks for overlapping time windows and returns a warning string for each conflict found."""
+        warnings = []
+        fmt = "%I:%M %p"
+        for i in range(len(scheduled_tasks)):
+            for j in range(i + 1, len(scheduled_tasks)):
+                a = scheduled_tasks[i]
+                b = scheduled_tasks[j]
+                a_start = datetime.strptime(a.start_time, fmt)
+                a_end   = datetime.strptime(a.end_time,   fmt)
+                b_start = datetime.strptime(b.start_time, fmt)
+                b_end   = datetime.strptime(b.end_time,   fmt)
+                if a_start < b_end and b_start < a_end:
+                    warnings.append(
+                        f"CONFLICT: '{a.task.title}' ({a.start_time}-{a.end_time}) "
+                        f"overlaps with '{b.task.title}' ({b.start_time}-{b.end_time})"
+                    )
+        return warnings
+
+    def reschedule_completed_tasks(self, pet: Pet) -> list[Task]:
+        """Finds completed daily or weekly tasks on the pet, adds a fresh next occurrence, and returns the new tasks created."""
+        new_tasks = []
+        for task in pet.tasks:
+            if task.completed and task.frequency in ("daily", "weekly"):
+                next_task = task.next_occurrence()
+                pet.add_task(next_task)
+                new_tasks.append(next_task)
+        return new_tasks
+
+    def _advance_time(self, time_str: str, minutes: int) -> str:
+        """Parses a 12-hour time string, adds the given minutes, and returns the resulting time as a formatted string."""
+        t = datetime.strptime(time_str, "%I:%M %p")
+        t += timedelta(minutes=minutes)
+        return t.strftime("%I:%M %p")
 
     def _build_prompt(self, owner: Owner, pet: Pet, tasks: list[Task]) -> str:
         """Constructs the natural-language prompt sent to the AI, embedding the pet's profile, owner name, and full task list with durations and priorities."""

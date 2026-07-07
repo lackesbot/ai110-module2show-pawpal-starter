@@ -36,13 +36,13 @@ Also I added available_minutes to sceheduler for the user to note how much time 
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
+- What constraints does your scheduler consider (for example: time, priority, preferences)? The scheduler considers readability and overlapping.
 - How did you decide which constraints mattered most?
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+- Describe one tradeoff your scheduler makes. Oner tradedoff it makes is the used of index loops
+- Why is that tradeoff reasonable for this scenario? Tradeoff is reasonable because it shifts the best case back to O(n^2)
 
 ---
 
