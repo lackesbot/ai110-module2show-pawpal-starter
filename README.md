@@ -94,6 +94,32 @@ Sample test output:
 | Auto-reschedule recurring tasks | `Scheduler.reschedule_completed_tasks()` | When a `"daily"` or `"weekly"` task is marked complete, a fresh copy is automatically appended to the pet's task list via `Task.next_occurrence()` |
 | Next occurrence factory | `Task.next_occurrence()` | Creates an identical Task with `completed=False`, used by `reschedule_completed_tasks()` to produce the next instance of a recurring task |
 
+## Testing PawPal+
+
+
+**Core behavior**
+- `mark_complete()` flips a task's status from incomplete to done
+- `add_task()` correctly increases a pet's task count
+
+**Sorting correctness**
+- `generate_schedule()` always places high-priority tasks before medium and low
+- `sort_by_time()` orders a list of scheduled tasks chronologically regardless of input order
+- Empty input to `sort_by_time()` returns an empty list without errors
+
+**Recurrence logic**
+- `next_occurrence()` produces a fresh task with `completed=False` and all original fields preserved
+- Completing a `"daily"` task triggers a new instance to be added to the pet's task list
+- Completing an `"as needed"` task does not trigger rescheduling
+- Incomplete tasks are never rescheduled
+
+**Conflict detection**
+- Overlapping time windows are caught and a descriptive warning string is returned
+- Tasks that share only a boundary (one ends exactly when the next starts) are not flagged
+- Empty and single-task inputs return no warnings
+
+tests\test_pawpal.py .............                                                                                                                                                                                 ======================================= 13 passed in 0.11s =======================================
+
+Confidence level: 4 starrs 
 ## 📸 Demo Walkthrough
 
 Describe your app in numbered steps so a reader can follow along without watching a video:
